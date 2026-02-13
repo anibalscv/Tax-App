@@ -1,31 +1,79 @@
-# BLUEPRINT: GESTIÓN DE EDIFICIOS (SUPABASE BaaS)
+## 1. Definición y Flujo
 
+```
+Actúa como un Senior Product Manager. Quiero desarrollar una aplicación que resuelva el siguiente problema: Muchas personas se les complica hacer pagos de impuestos, les toma mucho tiempo ir al banco o coordinar con su contador para poder resolver estos problemas.. Por favor, genera:
 
-Eres un desarrollador fullstack senior especializado en Supabase y arquitecturas BaaS. Debes ayudarme a implementar un sistema de gestión de reservas para edificios utilizando Supabase como backend completo.
+- Un User Flow detallado desde el registro hasta la acción principal.
 
-## CONTEXTO
+- Un listado de Funcionalidades Mínimas Viables (MVP) divididas en: Autenticación, Core Business y Perfil.
 
-Tengo un frontend React/PWA funcional con interfaces de admin y residente. Necesito agregar backend real con Supabase que incluya: persistencia, autenticación, autorización mediante RLS y coordinación en tiempo real.
+- Una estructura de datos inicial en formato JSON que represente las entidades principales de la app para poder usarlas como mock data.
 
-El sistema de reservas ser: "Zero Trust" donde la seguridad reside en la base de datos (RLS) y la lógica compleja en Edge Functions.
+- Una lista de 5 rutas (endpoints/páginas) necesarias.
+```
+## 2. Fase Frontend
 
-Analiza el proyecto de frontend que ya tenemos realizado.
+```
+Construye el frontend de una aplicación de Tax App usando Next.js, Tailwind CSS y componentes de Shadcn UI. Requisitos técnicos:
 
-## Esquema de Datos
-- **profiles**: id (uuid, fk auth.users), full_name, role (admin/resident), apartment.
-- **amenities**: id, name, capacity, available_from/to (TIME), is_active (bool).
-- **bookings**: id, amenity_id, user_id, booking_date (DATE), start_time/end_time (TIME), status (confirmed/cancelled).
-- **announcements**: id, title, content, priority, is_published.
-- **app_settings**: key (PK), value (JSONB). 
-  *Inits: min_hours_advance: 24, max_duration: 4, max_active_bookings: 3.*
+•	No uses el CDN de Tailwind; implementa los estilos mediante configuración de archivos local.
+•	Crea un sistema de Local Data: utiliza archivos JSON locales para emular una base de datos. Toda la lógica de lectura y escritura debe impactar en estos objetos en memoria o localStorage.
+•	Implementa un layout moderno y responsive.
+•	Incluye un flujo de Login y Registro (mockeado) que proteja las rutas privadas.
 
-## Reglas de Seguridad (RLS)
-1. **Profiles**: Usuario lee su fila. Admin lee todo. Trigger auto-crea profile al registro.
-2. **Amenities/Announcements**: Todos leen (si están activos/publicados). Solo Admin escribe.
-3. **Bookings**: Usuario lee/crea/cancela lo propio. Admin lee/modifica todo.
+Páginas a crear:
 
-## Lógica de Negocio (Edge Functions)
-- **validate-booking**: Único punto de entrada para crear reservas. Valida contra `app_settings` y solapamientos antes de insertar.
+•	Onboarding: El usuario descarga la app y ve un splash screen con la propuesta de valor (adiós filas, hola tiempo libre).
 
-## Realtime
-- Habilitar `REPLICA` en la tabla `bookings` para actualizaciones instantáneas en el frontend.
+•	Registro/Auth: Email, contraseña y validación de identidad (KYC biométrico si es posible, por seguridad financiera).
+
+•	Vinculación Fiscal: El usuario ingresa su Identificación Fiscal (RUC, RFC, NIT, etc.) y las credenciales de la entidad tributaria.
+
+•	Dashboard Principal: La app sincroniza con el gobierno y muestra un resumen: "Tienes $X por pagar este mes".
+
+•	Selección de Impuesto: El usuario toca la deuda pendiente.
+
+•	Método de Pago: Selecciona tarjeta de crédito/débito o billetera digital previamente guardada.
+
+•	Confirmación y Pago: Procesamiento mediante pasarela de pagos.
+
+•	Cierre de Ciclo: Generación de comprobante legal (PDF) y envío automático al contador (vía email/WhatsApp).
+
+Aquí tienes el ejemplo de la estructura de datos que espero:
+{
+  "user": {
+    "id": "u-98765",
+    "full_name": "Valeria Jiménez",
+    "tax_id": "VJIM880101-ABC",
+    "email": "valeria.j@example.com",
+    "linked_accounts": [
+      {
+        "bank": "NeoBank",
+        "last_four": "4422",
+        "type": "credit"
+      }
+    ]
+  },
+  "tax_records": [
+    {
+      "id": "tax-001",
+      "type": "IVA Mensual",
+      "period": "Enero 2026",
+      "amount": 450.00,
+      "currency": "USD",
+      "due_date": "2026-02-20",
+      "status": "pending"
+    },
+    {
+      "id": "tax-002",
+      "type": "Impuesto a la Renta",
+      "period": "Anual 2025",
+      "amount": 1200.50,
+      "currency": "USD",
+      "due_date": "2026-03-15",
+      "status": "paid",
+      "receipt_url": "https://cdn.taxeasy.com/receipts/r-112233.pdf"
+    }
+  ]
+}.
+```
