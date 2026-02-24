@@ -78,6 +78,12 @@ export const db = {
     return user;
   },
 
+  logout: () => {
+    const state = db.getState();
+    state.user = null;
+    db.setState(state);
+  },
+
   verifyBiometric: async (): Promise<boolean> => {
     await new Promise(resolve => setTimeout(resolve, 1500));
     const state = db.getState();
