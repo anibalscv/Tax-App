@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Layout } from './components/Layout';
+import { Layout, DashboardLayout } from './components/Layout';
 import { Onboarding } from './pages/Onboarding';
 import { Auth } from './pages/Auth';
 import { LinkTax } from './pages/LinkTax';
@@ -36,48 +36,91 @@ const App: React.FC = () => {
     navigate('payment');
   };
 
+  const handleLogout = () => {
+    db.logout();
+    navigate('onboarding');
+  };
+
   const renderScreen = () => {
     switch (currentRoute) {
       case 'onboarding':
-        return <Onboarding onComplete={() => navigate('auth')} />;
+        return (
+          <Layout>
+            <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+              <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+                <Onboarding onComplete={() => navigate('auth')} />
+              </div>
+            </div>
+          </Layout>
+        );
       
       case 'auth':
-        return <Auth onLogin={() => {
-            const state = db.getState();
-            // If already has tax ID linked, go to dashboard
-            if (state.user?.tax_id) {
-                navigate('dashboard');
-            } else {
-                navigate('link');
-            }
-        }} />;
+        return (
+          <Layout>
+            <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+              <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden min-h-[500px] flex flex-col">
+                <Auth onLogin={() => {
+                    const state = db.getState();
+                    // If already has tax ID linked, go to dashboard
+                    if (state.user?.tax_id) {
+                        navigate('dashboard');
+                    } else {
+                        navigate('link');
+                    }
+                }} />
+              </div>
+            </div>
+          </Layout>
+        );
       
       case 'link':
-        return <LinkTax onLinked={() => navigate('dashboard')} />;
+        return (
+          <Layout>
+            <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+              <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden min-h-[600px] flex flex-col">
+                <LinkTax onLinked={() => navigate('dashboard')} />
+              </div>
+            </div>
+          </Layout>
+        );
       
       case 'dashboard':
-        return <Dashboard onSelectTax={handleTaxSelection} />;
+        return (
+          <DashboardLayout onLogout={handleLogout}>
+            <Dashboard onSelectTax={handleTaxSelection} />
+          </DashboardLayout>
+        );
       
       case 'payment':
-        if (!selectedTaxId) return <Dashboard onSelectTax={handleTaxSelection} />;
+        if (!selectedTaxId) return (
+          <DashboardLayout onLogout={handleLogout}>
+            <Dashboard onSelectTax={handleTaxSelection} />
+          </DashboardLayout>
+        );
         return (
-          <Payment 
-            taxId={selectedTaxId} 
-            onBack={() => navigate('dashboard')}
-            onSuccess={() => navigate('dashboard')}
-          />
+          <DashboardLayout onLogout={handleLogout}>
+            <Payment 
+              taxId={selectedTaxId} 
+              onBack={() => navigate('dashboard')}
+              onSuccess={() => navigate('dashboard')}
+            />
+          </DashboardLayout>
         );
         
       default:
-        return <Onboarding onComplete={() => navigate('auth')} />;
+        return (
+          <Layout>
+            <div className="flex-1 flex items-center justify-center p-4 md:p-8">
+              <div className="w-full max-w-4xl bg-white rounded-2xl shadow-2xl overflow-hidden flex flex-col md:flex-row min-h-[600px]">
+                <Onboarding onComplete={() => navigate('auth')} />
+              </div>
+            </div>
+          </Layout>
+        );
     }
   };
 
-  return (
-    <Layout>
-      {renderScreen()}
-    </Layout>
-  );
+  return renderScreen();
 };
 
 export default App;
