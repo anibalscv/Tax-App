@@ -28,7 +28,26 @@ export const Payment: React.FC<PaymentProps> = ({ taxId, onBack, onSuccess }) =>
     if (!tax) return;
     setLoading(true);
     try {
-      await db.payTax(tax.id);
+      const paidTax = await db.payTax(tax.id);
+      const user = db.getState().user;
+      const transactionId = `TX-${Date.now().toString().slice(-6)}`;
+
+      // Send confirmation email via Netlify function (non-blocking)
+      if (user?.email) {
+        fetch('/api/send-payment-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: user.email,
+            name: user.full_name,
+            taxType: paidTax.type,
+            period: paidTax.period,
+            amount: paidTax.amount,
+            transactionId,
+          }),
+        }).catch((err) => console.warn('Email notification failed:', err));
+      }
+
       setLoading(false);
       setStep('success');
     } catch (e) {
@@ -53,18 +72,18 @@ export const Payment: React.FC<PaymentProps> = ({ taxId, onBack, onSuccess }) =>
 
           <Card className="w-full mb-8 bg-slate-50 border-slate-200">
             <CardContent className="p-4 space-y-3">
-               <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Monto</span>
-                  <span className="font-bold">${tax.amount.toFixed(2)}</span>
-               </div>
-               <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Transacción</span>
-                  <span className="font-mono">TX-{Date.now().toString().slice(-6)}</span>
-               </div>
-               <div className="flex justify-between text-sm">
-                  <span className="text-slate-500">Fecha</span>
-                  <span>{new Date().toLocaleDateString()}</span>
-               </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Monto</span>
+                <span className="font-bold">${tax.amount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Transacción</span>
+                <span className="font-mono">TX-{Date.now().toString().slice(-6)}</span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-slate-500">Fecha</span>
+                <span>{new Date().toLocaleDateString()}</span>
+              </div>
             </CardContent>
           </Card>
 
@@ -95,7 +114,7 @@ export const Payment: React.FC<PaymentProps> = ({ taxId, onBack, onSuccess }) =>
 
       <div className="p-6 md:p-10 flex-1 flex flex-col items-center">
         <div className="w-full max-w-4xl grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12">
-          
+
           {/* Left Column: Summary & Details */}
           <div className="space-y-8">
             <div className="text-center md:text-left py-6 md:py-0">
@@ -127,27 +146,27 @@ export const Payment: React.FC<PaymentProps> = ({ taxId, onBack, onSuccess }) =>
             <div>
               <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider mb-3 ml-1">Método de Pago</h3>
               <div className="bg-white p-5 rounded-xl border border-indigo-200 ring-1 ring-indigo-500 shadow-sm flex items-center justify-between transition-all hover:shadow-md">
-                 <div className="flex items-center gap-4">
-                   <div className="h-12 w-12 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-700">
-                      <CreditCard className="h-6 w-6" />
-                   </div>
-                   <div>
-                      <p className="font-medium text-slate-900 text-lg">{account?.bank} •••• {account?.last_four}</p>
-                      <p className="text-sm text-slate-500">Tarjeta de Crédito</p>
-                   </div>
-                 </div>
-                 <Button variant="ghost" className="text-indigo-600 text-sm h-8 px-3 hover:bg-indigo-50">Cambiar</Button>
+                <div className="flex items-center gap-4">
+                  <div className="h-12 w-12 bg-indigo-50 rounded-lg flex items-center justify-center text-indigo-700">
+                    <CreditCard className="h-6 w-6" />
+                  </div>
+                  <div>
+                    <p className="font-medium text-slate-900 text-lg">{account?.bank} •••• {account?.last_four}</p>
+                    <p className="text-sm text-slate-500">Tarjeta de Crédito</p>
+                  </div>
+                </div>
+                <Button variant="ghost" className="text-indigo-600 text-sm h-8 px-3 hover:bg-indigo-50">Cambiar</Button>
               </div>
             </div>
 
             <div className="space-y-4 mt-8 md:mt-0 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-               <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-4 bg-slate-50 p-3 rounded-lg">
-                 <Lock className="h-4 w-4 text-emerald-600" /> 
-                 <span>Pagos procesados con seguridad SSL de 256 bits</span>
-               </div>
-               <Button fullWidth onClick={handlePay} isLoading={loading} className="h-14 text-lg shadow-lg shadow-indigo-200/50">
-                 Pagar ${tax.amount.toFixed(2)}
-               </Button>
+              <div className="flex items-center justify-center gap-2 text-sm text-slate-500 mb-4 bg-slate-50 p-3 rounded-lg">
+                <Lock className="h-4 w-4 text-emerald-600" />
+                <span>Pagos procesados con seguridad SSL de 256 bits</span>
+              </div>
+              <Button fullWidth onClick={handlePay} isLoading={loading} className="h-14 text-lg shadow-lg shadow-indigo-200/50">
+                Pagar ${tax.amount.toFixed(2)}
+              </Button>
             </div>
           </div>
 

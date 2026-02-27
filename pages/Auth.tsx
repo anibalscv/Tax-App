@@ -46,16 +46,16 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
         </CardHeader>
         <CardContent className="px-0 mt-4">
           <form onSubmit={handleLogin} className="space-y-4">
-            <Input 
-              label="Email (Opcional)" 
-              type="email" 
+            <Input
+              label="Email (Opcional)"
+              type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               placeholder="tu@email.com"
             />
-            <Input 
-              label="Contraseña (Opcional)" 
-              type="password" 
+            <Input
+              label="Contraseña (Opcional)"
+              type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
@@ -63,8 +63,15 @@ export const Auth: React.FC<AuthProps> = ({ onLogin }) => {
             <Button type="submit" fullWidth className="h-14 text-base shadow-lg shadow-indigo-200 mt-6" isLoading={loading}>
               Ingresar a mi cuenta
             </Button>
-            <div className="text-center mt-6">
-               <p className="text-xs text-slate-400">Al ingresar aceptas nuestros Términos y Condiciones</p>
+
+            <div className="text-center mt-6 space-y-4">
+              <p className="text-sm text-slate-600">
+                ¿No tienes una cuenta?{' '}
+                <a href="#" className="font-semibold text-indigo-600 hover:text-indigo-500 transition-colors">
+                  Crear nueva cuenta
+                </a>
+              </p>
+              <p className="text-xs text-slate-400">Al ingresar aceptas nuestros Términos y Condiciones</p>
             </div>
           </form>
         </CardContent>
