@@ -1,6 +1,8 @@
 import { AppState, TaxRecord, User } from '../types';
 
-const STORAGE_KEY = 'taxflow_db_v1';
+// @ts-ignore
+const BUILD_ID = typeof __BUILD_TIMESTAMP__ !== 'undefined' ? __BUILD_TIMESTAMP__ : Date.now().toString();
+const STORAGE_KEY = `taxflow_db_v2_${BUILD_ID}`;
 
 const INITIAL_DATA: AppState = {
   user: null, // Start logged out
@@ -21,8 +23,7 @@ const INITIAL_DATA: AppState = {
       amount: 1200.50,
       currency: "USD",
       due_date: "2026-03-15",
-      status: "paid",
-      receipt_url: "#"
+      status: "pending"
     },
     {
       id: "tax-003",
@@ -31,7 +32,7 @@ const INITIAL_DATA: AppState = {
       amount: 85.00,
       currency: "USD",
       due_date: "2026-01-30",
-      status: "overdue"
+      status: "pending"
     }
   ]
 };
